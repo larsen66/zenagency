@@ -1,0 +1,8 @@
+.scramble-text { display: inline-block; }
+.scramble-text-char { display: inline-block; position: relative; white-space: pre; }
+.scramble-text-size { visibility: hidden; }
+.scramble-text-glyph { position: absolute; inset: 0; text-align: center; }
+@media (prefers-reduced-motion: reduce) {
+  .scramble-text-size { visibility: visible; }
+  .scramble-text-glyph { visibility: hidden; }
+}
