@@ -1,7 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
 import { Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { GridBackdrop } from "@/components/grid-backdrop";
 import { Reveal } from "@/components/reveal";
 import { whyUs } from "@/lib/content";
@@ -11,14 +9,20 @@ export function WhyUs() {
   return (
     <section
       id="why-us"
-      className="relative overflow-hidden bg-background pt-28 pb-20 md:pt-32 md:pb-28"
+      className="relative overflow-hidden bg-background py-16 sm:py-20 lg:py-28"
     >
-      <GridBackdrop />
+      <div
+        aria-hidden
+        className="zen-grid-edges pointer-events-none absolute inset-0 overflow-hidden"
+      >
+        <GridBackdrop />
+        <div className="zen-grid zen-grid-edges-soft" />
+      </div>
 
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-8">
+      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-14">
         <Reveal className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div className="max-w-xl">
-            <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
+            <h2 className="text-[clamp(2rem,3.5vw,3rem)] font-extrabold leading-[1.08] tracking-tight">
               {whyUs.title}
             </h2>
             <p className="mt-4 max-w-md text-lg text-muted-foreground">
@@ -27,7 +31,7 @@ export function WhyUs() {
           </div>
         </Reveal>
 
-        <div className="relative mt-12">
+        <div className="relative mt-8 lg:mt-12">
           <Reveal>
             <div className="relative mx-auto max-w-4xl">
               <Image
@@ -35,33 +39,34 @@ export function WhyUs() {
                 alt="Custom website design on a laptop"
                 width={1100}
                 height={760}
+                sizes="(max-width: 767px) calc(100vw - 40px), (max-width: 1023px) calc(100vw - 64px), 768px"
                 className="mx-auto h-auto w-full max-w-3xl"
               />
 
               <FeatureCard
-                className="absolute top-[8%] right-[2%] hidden max-w-[11.5rem] sm:block"
+                className="absolute top-[8%] right-[2%] hidden max-w-[11.5rem] lg:block"
                 tone="lime"
                 text={whyUs.features[2]}
               />
               <FeatureCard
-                className="absolute top-[22%] right-[18%] hidden max-w-[12rem] md:block"
+                className="absolute top-[22%] right-[18%] hidden max-w-[12rem] lg:block"
                 tone="ink"
                 text={whyUs.features[1]}
               />
               <FeatureCard
-                className="absolute top-[42%] left-0 hidden max-w-[12rem] md:block"
+                className="absolute top-[42%] left-0 hidden max-w-[12rem] lg:block"
                 tone="lime"
                 text={whyUs.features[0]}
               />
               <FeatureCard
-                className="absolute bottom-[22%] left-[6%] hidden max-w-[13rem] md:block"
+                className="absolute bottom-[22%] left-[6%] hidden max-w-[13rem] lg:block"
                 tone="ink"
                 text={whyUs.features[3]}
               />
             </div>
           </Reveal>
 
-          <div className="mt-8 grid gap-3 sm:hidden">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:hidden">
             {whyUs.features.map((feature, i) => (
               <FeatureCard
                 key={feature}
@@ -72,25 +77,6 @@ export function WhyUs() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-wrap items-center gap-3">
-          {whyUs.pills.map((pill) => (
-            <span
-              key={pill}
-              className="rounded-full border-2 border-lime bg-lime/20 px-4 py-2 text-sm font-semibold text-foreground"
-            >
-              {pill}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-8 flex items-center justify-between gap-4">
-          <Button
-            asChild
-            className="rounded-full bg-transparent px-0 text-lg font-extrabold text-foreground shadow-none hover:bg-transparent hover:underline"
-          >
-            <Link href="#contact">{whyUs.cta}</Link>
-          </Button>
-        </div>
       </div>
     </section>
   );

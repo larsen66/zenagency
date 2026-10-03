@@ -13,10 +13,6 @@ export function BrandMark() {
           {site.tagline}
         </p>
       </div>
-      <div className="absolute inset-x-0 bottom-6 z-10 flex justify-between px-6 text-sm text-lime md:px-12">
-        <span>{site.urlLabel}</span>
-        <span>{site.instagram}</span>
-      </div>
     </section>
   );
 }

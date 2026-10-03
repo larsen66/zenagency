@@ -1,8 +1,6 @@
 import { HeroScroll } from "@/components/hero-scroll";
 import { ArrowUpRight } from "lucide-react";
-import { ScrambleText } from "@/components/ui/motion-scramble-text";
-import { Reveal } from "@/components/reveal";
-import { ZenMark3D } from "@/components/zen-mark-3d";
+import { HeroMark } from "@/components/hero-mark";
 
 export function Hero() {
   return (
@@ -11,14 +9,13 @@ export function Hero() {
         <span>Strategy<br />Design<br />Marketing</span>
       </div>
       <div className="hero-main">
-        <ZenMark3D className="hero-mark" />
+        <HeroMark />
         <div className="hero-copy">
-        <Reveal delay={0.15}><h1 id="hero-title"><span>Ideas</span> built to move<span>.</span></h1></Reveal>
-        <Reveal delay={0.23}><p className="hero-caption">From strategy to content, we build modern brands<br className="hidden sm:block" /> with clarity, speed and impact.</p></Reveal>
-        <Reveal delay={0.31}><div className="hero-actions">
-          <a href="#contact" className="hero-button hero-button-primary"><ScrambleText text="Start your growth" trigger="hover" /> <ArrowUpRight aria-hidden="true" /></a>
-          <a href="#work" className="hero-button hero-button-secondary"><ScrambleText text="See cases" trigger="hover" /> <ArrowUpRight aria-hidden="true" /></a>
-        </div></Reveal>
+          <h1 id="hero-title" aria-label="Ideas built to move."><span className="hero-title-word hero-title-accent">Ideas</span>{" "}<span className="hero-title-word">built</span>{" "}<span className="hero-title-word">to</span>{" "}<span className="hero-title-word">move<em className="hero-title-dot">.</em></span></h1>
+          <p className="hero-caption">From strategy to content, we build modern brands<br className="hidden sm:block" /> with clarity, speed and impact.</p>
+          <div className="hero-actions">
+            <a href="#contact" className="hero-button hero-button-primary">Start your growth <ArrowUpRight aria-hidden="true" /></a>
+          </div>
         </div>
       </div>
     </HeroScroll>

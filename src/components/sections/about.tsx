@@ -1,18 +1,22 @@
+import type { ReactNode } from "react";
 import { about } from "@/lib/content";
 import { TextGradientScroll } from "@/components/ui/text-gradient-scroll";
 
-export function About() {
+export function About({ children }: { children?: ReactNode }) {
   return (
-    <section id="about" aria-labelledby="about-title" className="relative isolate flex min-h-[110svh] items-center bg-black px-6 pt-16 pb-48 text-[#e1e3dc] md:px-14 md:pt-24 md:pb-72">
-      <div data-about-content className="mx-auto w-full max-w-[1280px] translate-y-[calc(20%_-_15svh)]">
-        <h2 id="about-title" className="mb-12 text-xs font-medium uppercase tracking-[.24em] text-[#c8df8b] md:mb-16">01 / {about.title}</h2>
-        <TextGradientScroll
-          text={`${about.highlight} ${about.body}`}
-          type="letter"
-          textOpacity="medium"
-          className="max-w-[24ch] text-[clamp(2rem,4.8vw,5rem)] font-medium leading-[1.16] tracking-[-.035em]"
-        />
+    <section id="about" aria-labelledby="about-title" className="relative isolate bg-black text-[#e1e3dc]">
+      <div data-about-panel className="relative flex items-center px-5 pt-20 pb-12 sm:px-8 sm:pt-24 sm:pb-16 lg:min-h-[80svh] lg:px-14 lg:py-24">
+        <div data-about-content className="mx-auto w-full max-w-[1280px]">
+          <h2 id="about-title" className="mb-8 text-xs font-medium uppercase tracking-[.24em] text-lime sm:mb-10 lg:mb-14">{about.title}</h2>
+          <TextGradientScroll
+            text={`${about.highlight} ${about.body}`}
+            type="letter"
+            textOpacity="medium"
+            className="max-w-[26ch] text-[clamp(1.75rem,4.8vw,5rem)] font-medium leading-[1.16] tracking-[-.035em]"
+          />
+        </div>
       </div>
+      {children}
     </section>
   );
 }

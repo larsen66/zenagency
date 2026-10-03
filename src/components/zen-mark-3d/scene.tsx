@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { Center, useVideoTexture } from "@react-three/drei";
+import { useVideoTexture } from "@react-three/drei";
 import * as THREE from "three";
 import type { Shape } from "three";
 import { SVGLoader } from "three/addons/loaders/SVGLoader.js";
@@ -118,7 +118,7 @@ function LetterMesh({ shapes, texture }: { shapes: Shape[]; texture: THREE.Textu
 }
 
 function useLetterVideo(src: string, active: boolean) {
-  const texture = useVideoTexture(src, { start: false, muted: true, loop: true, playsInline: true, defaultPlaybackRate: 0.7, playbackRate: 0.7 });
+  const texture = useVideoTexture(src, { unsuspend: "loadeddata", start: false, muted: true, loop: true, playsInline: true, defaultPlaybackRate: 0.7, playbackRate: 0.7 });
 
   useEffect(() => {
     const video = texture.image as HTMLVideoElement;
@@ -144,12 +144,28 @@ function useLetterVideo(src: string, active: boolean) {
   return texture;
 }
 
-function Mark({ active }: { active: boolean }) {
+function VideoLetter({ shapes, src, active, onReady }: { shapes: Shape[]; src: string; active: boolean; onReady: () => void }) {
+  const texture = useLetterVideo(src, active);
+  const frame = useRef<number | null>(null);
+  useFrame(() => {
+    if (frame.current === null) frame.current = requestAnimationFrame(onReady);
+  });
+  useEffect(() => () => {
+    if (frame.current !== null) cancelAnimationFrame(frame.current);
+    frame.current = null;
+  }, []);
+  return <LetterMesh shapes={shapes} texture={texture} />;
+}
+
+const videos = ["/images/zen/woman-web.mp4", "/images/zen/building-web.mp4", "/images/zen/light-trails-web.mp4"];
+
+function Mark({ active, onReady }: { active: boolean; onReady: () => void }) {
   const svg = useLoader(SVGLoader, SVG_URL);
-  const woman = useLetterVideo("/images/zen/woman-loop.mp4", active);
-  const building = useLetterVideo("/images/zen/building-loop.mp4", active);
-  const trails = useLetterVideo("/images/zen/light-trails-loop.mp4", active);
-  const textures = [woman, building, trails];
+  const readyLetters = useRef(0);
+  const onLetterReady = useCallback(() => {
+    readyLetters.current += 1;
+    if (readyLetters.current === svg.paths.length) onReady();
+  }, [onReady, svg.paths.length]);
 
   const letters = useMemo(
     () => svg.paths.map((path) => ({
@@ -159,14 +175,21 @@ function Mark({ active }: { active: boolean }) {
     [svg],
   );
 
+  // Compute the center from the SVG, before any suspended video has loaded.
+  const center = useMemo(() => new THREE.Box2().setFromPoints(
+    letters.flatMap(({ shapes }) => shapes.flatMap((shape) => shape.getPoints(12))),
+  ).getCenter(new THREE.Vector2()), [letters]);
+
   return (
-    <Center>
+    <group position={[-center.x * SCALE, center.y * SCALE, -DEPTH * SCALE / 2]}>
       <group scale={[SCALE, -SCALE, SCALE]}>
         {letters.map(({ shapes, letter }, index) => (
-          <LetterMesh key={index} shapes={shapes} texture={textures[letter === "z" ? 0 : letter === "e" ? 1 : 2]} />
+          <Suspense key={index} fallback={null}>
+            <VideoLetter shapes={shapes} src={videos[letter === "z" ? 0 : letter === "e" ? 1 : 2]} active={active} onReady={onLetterReady} />
+          </Suspense>
         ))}
       </group>
-    </Center>
+    </group>
   );
 }
 
@@ -229,7 +252,7 @@ function ContextRecovery() {
   return null;
 }
 
-export default function ZenMarkScene({ active }: { active: boolean }) {
+export default function ZenMarkScene({ active, onReady }: { active: boolean; onReady: () => void }) {
   return (
     <Canvas
       resize={{ offsetSize: true }}
@@ -254,7 +277,7 @@ export default function ZenMarkScene({ active }: { active: boolean }) {
       <directionalLight position={[5, 1, -3]} intensity={1.1} />
       <Suspense fallback={null}>
         <Rig>
-          <Mark active={active} />
+          <Mark active={active} onReady={onReady} />
         </Rig>
       </Suspense>
     </Canvas>

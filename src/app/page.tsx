@@ -5,10 +5,7 @@ import { About } from "@/components/sections/about";
 import { Services } from "@/components/sections/services";
 import { WhyUs } from "@/components/sections/why-us";
 import { Capabilities } from "@/components/sections/capabilities";
-import { FullCycle } from "@/components/sections/full-cycle";
-import { ContentKit } from "@/components/sections/content-kit";
 import { AiChatbots } from "@/components/sections/ai-chatbots";
-import { Partnership } from "@/components/sections/partnership";
 import { CtaBand } from "@/components/sections/cta-band";
 
 export default function Home() {
@@ -18,16 +15,16 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <div className="about-services-stack">
-          <About />
+          <div className="about-scroll-track">
+            <About>
+              <Capabilities />
+            </About>
+          </div>
           <Services />
         </div>
         <WhyUs />
-        <Capabilities />
-        <FullCycle />
-        <ContentKit />
-        <AiChatbots />
-        <Partnership />
         <CtaBand />
+        <AiChatbots />
       </main>
       <SiteFooter />
     </div>

@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useId, useRef, type ReactNode } from "react";
-import { HeroCrtFilter } from "./hero-crt-filter";
+import { useEffect, useRef, type ReactNode } from "react";
+import { HeroBackground } from "./hero-background";
 import { TransitionVignette } from "./transition-vignette";
 
-import { MAX_SHUTTER_BANDS as MAX_BANDS, clampProgress as clamp, shutterCoverage } from "./scroll-shutters";
+import { MAX_SHUTTER_BANDS as MAX_BANDS, SHUTTER_SCRUB_MS, clampProgress as clamp, shutterCoverage } from "./scroll-shutters";
 
 export function HeroScroll({ children }: { children: ReactNode }) {
-  const clipId = useId().replace(/:/g, "");
-  const crtId = `${clipId}-crt`;
   const track = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const root = track.current;
@@ -16,32 +14,43 @@ export function HeroScroll({ children }: { children: ReactNode }) {
     const hero = root.querySelector<HTMLElement>(".zen-hero")!;
     const mark = root.querySelector<HTMLElement>(".hero-mark")!;
     const copy = root.querySelectorAll<HTMLElement>(".hero-main > :not(.hero-mark), .hero-side");
-    const bands = root.querySelectorAll<SVGRectElement>(".hero-transition-clip .hero-clip-band");
+    const vignette = root.querySelector<HTMLElement>("[data-transition-vignette]")!;
     const preference = matchMedia("(prefers-reduced-motion: reduce)");
     let frame = 0;
     let markCenter = 0;
+    let trackTop = 0;
+    let heroHeight = 1;
+    let count = 10;
     let progress: number | null = null;
     let previousTime = 0;
     const measure = () => {
       // offsetTop is unaffected by the animated transform.
       markCenter = root.querySelector<HTMLElement>(".hero-main")!.offsetTop + mark.offsetTop + mark.offsetHeight / 2;
+      trackTop = root.getBoundingClientRect().top + window.scrollY;
+      heroHeight = Math.max(hero.offsetHeight, 1);
+      count = window.innerWidth <= 600 ? MAX_BANDS : 10;
+    };
+    const targetProgress = () => preference.matches ? 0 : clamp((window.scrollY - trackTop) / heroHeight);
+    const smooth = (value: number, from: number, to: number) => {
+      const p = clamp((value - from) / (to - from));
+      return p * p * (3 - 2 * p);
     };
     const render = (time = performance.now()) => {
       frame = 0;
-      const target = preference.matches ? 0 : clamp(-root.getBoundingClientRect().top / hero.offsetHeight);
+      const target = targetProgress();
       const elapsed = Math.min(64, Math.max(0, time - previousTime));
       previousTime = time;
       // Short, frame-rate-independent scrub softens wheel steps without changing the sequence.
       progress = progress === null || preference.matches
         ? target
-        : progress + (target - progress) * (1 - Math.exp(-elapsed / 90));
-      if (Math.abs(target - progress) < .0001) progress = target;
+        : progress + (target - progress) * (1 - Math.exp(-elapsed / SHUTTER_SCRUB_MS));
+      if (Math.abs(target - progress) < .0005) progress = target;
       const currentProgress = progress;
       const heroOpacity = 1 - clamp((progress - .68) / .12);
       hero.style.opacity = String(heroOpacity);
-      const blurProgress = clamp((progress - .03) / .47);
-      const blur = 10 * blurProgress * blurProgress * (3 - 2 * blurProgress);
-      hero.style.filter = `url(#${crtId})${blur === 0 || progress >= .8 ? "" : ` blur(${blur}px)`}`;
+      // Blur the shrinking mark rather than another full-screen WebGL/video surface.
+      const blur = (count === MAX_BANDS ? 3 : 6) * smooth(progress, .03, .5);
+      mark.style.filter = blur === 0 || progress >= .8 ? "" : `blur(${blur}px)`;
       const shrink = clamp(progress / .4);
       mark.style.transform = `translate3d(0,${(72 - markCenter) * shrink}px,0) scale(${1 - shrink * .84})`;
       const opacity = 1 - clamp(progress / .3);
@@ -49,52 +58,50 @@ export function HeroScroll({ children }: { children: ReactNode }) {
         element.style.opacity = String(opacity);
         element.style.visibility = opacity === 0 ? "hidden" : "";
       }
-      const count = window.innerWidth <= 600 ? 15 : 10;
       const timeline = clamp(progress / .8) * (.5 + (count - 1) * .04);
-      bands.forEach((band, index) => {
-        if (index >= count) { band.setAttribute("height", "0"); return; }
+      const points: string[] = [];
+      for (let index = 0; index < count; index++) {
         const coverage = shutterCoverage(timeline - (count - index - 1) * .04);
-        // The shutter layer scrolls up with the page, unlike the pinned logo.
-        band.setAttribute("y", String(index / count - currentProgress));
-        band.setAttribute("height", String((1 - coverage) / count + (coverage < 1 ? .0001 : 0)));
-      });
+        if (coverage === 1) continue;
+        const top = (index / count - currentProgress) * 100;
+        const bottom = top + (1 - coverage) / count * 100 + .01;
+        points.push(`0 ${top}%`, `100% ${top}%`, `100% ${bottom}%`, `0 ${bottom}%`);
+      }
+      // One CSS clip avoids relaying out 15 SVG rectangles on each frame.
+      hero.style.clipPath = progress === 0 ? "" : `polygon(${points.length ? points.join(",") : "0 0,0 0,0 0"})`;
+      vignette.style.opacity = String(preference.matches ? 0 : smooth(progress, 0, .2) * (1 - smooth(progress, .55, .85)));
       hero.inert = progress >= .95;
       if (progress !== target) frame = requestAnimationFrame(render);
     };
     const schedule = () => {
-      if (!frame) {
+      if (!frame && progress !== targetProgress()) {
         previousTime = performance.now();
         frame = requestAnimationFrame(render);
       }
     };
-    const resize = () => { measure(); schedule(); };
+    const resize = () => { cancelAnimationFrame(frame); measure(); render(); };
     const observer = new ResizeObserver(resize);
     observer.observe(hero);
     observer.observe(mark);
     measure(); render();
     window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", resize);
     preference.addEventListener("change", resize);
     return () => {
       cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", resize);
       preference.removeEventListener("change", resize);
     };
-  }, [crtId]);
+  }, []);
 
   return <div id="top" ref={track} className="hero-scroll-track">
     <TransitionVignette />
-    <svg width="0" height="0" className="absolute" aria-hidden="true">
-      <defs><HeroCrtFilter id={crtId} /><clipPath id={clipId} clipPathUnits="objectBoundingBox" className="hero-transition-clip">
-        {Array.from({ length: MAX_BANDS }, (_, index) => <rect className="hero-clip-band" key={index} x="0" y={index / MAX_BANDS} width="1" height={1 / MAX_BANDS + .0001} />)}
-      </clipPath></defs>
-    </svg>
-    <section className="zen-hero" aria-labelledby="hero-title" style={{ clipPath: `url(#${clipId})`, filter: `url(#${crtId})` }}>
-      <div className="hero-transition-backdrop" aria-hidden="true">
-        <div className="hero-rays" />
-      </div>
+    <section className="zen-hero" data-hero-intro="pending" aria-labelledby="hero-title">
+      <noscript><style>{`.zen-hero[data-hero-intro="pending"] .hero-letter, .zen-hero[data-hero-intro="pending"] .hero-title-word, .zen-hero[data-hero-intro="pending"] .hero-caption, .zen-hero[data-hero-intro="pending"] .hero-actions { opacity: 1 !important; }`}</style></noscript>
+      <HeroBackground />
       {children}
-      <div className="hero-crt-screen" aria-hidden="true" />
     </section>
   </div>;
 }

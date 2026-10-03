@@ -13,13 +13,39 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { nav } from "@/lib/content";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
+  const header = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const element = header.current;
+    const services = document.getElementById("services");
+    const main = document.querySelector("main");
+    if (!element || !services || !main) return;
+    let lightStart = Infinity;
+    const update = () => {
+      const surface = scrollY >= lightStart ? "light" : "dark";
+      if (element.dataset.surface !== surface) element.dataset.surface = surface;
+    };
+    const measure = () => {
+      lightStart = services.getBoundingClientRect().top + scrollY - element.offsetHeight;
+      update();
+    };
+    const sizes = new ResizeObserver(measure);
+    sizes.observe(main);
+    sizes.observe(element);
+    measure();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => {
+      sizes.disconnect();
+      window.removeEventListener("scroll", update);
+    };
+  }, []);
 
   return (
-    <header className="zen-header fixed top-0 z-40 w-full">
+    <header ref={header} className="zen-header fixed top-0 z-40 w-full">
       <div className="zen-header-inner">
         <Link href="#top" className="flex shrink-0 items-center gap-3" aria-label="ZEN home">
           <Logo showWordmark={false} markClassName="h-6 md:h-8" />
@@ -30,7 +56,7 @@ export function SiteHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className="text-base text-white/90 transition-colors hover:text-[#d5ff51]"
+              className="text-base text-white/90 transition-colors hover:text-lime"
             >
               {item.label}
             </Link>
@@ -67,12 +93,12 @@ export function SiteHeader() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className="text-lg font-semibold"
+                    className="flex min-h-11 items-center text-lg font-semibold"
                   >
                     {item.label}
                   </Link>
                 ))}
-                <Button asChild className="mt-4 rounded-full bg-lime text-ink hover:bg-lime/90">
+                <Button asChild className="mt-4 rounded-full bg-lime text-ink transition-[filter] hover:bg-lime hover:brightness-95">
                   <Link href="#contact" onClick={() => setOpen(false)}>
                     <ScrambleText text="Let’s talk" trigger="hover" />
                   </Link>

@@ -6,10 +6,10 @@ import { services } from "@/lib/content";
 import { ServicesWithAnimatedHoverModal } from "@/components/ui/services-with-animated-hover-modal";
 
 const previews = [
-  { image: "/images/services/social.jpg", color: "#171c11" },
-  { image: "/images/services/ads.jpg", color: "#c8df8b" },
-  { image: "/images/services/search.jpg", color: "#e1e3dc" },
-  { image: "/images/services/growth.jpg", color: "#344529" },
+  { image: "/images/services/social.jpg" },
+  { image: "/images/services/ads.jpg" },
+  { image: "/images/services/search.jpg" },
+  { image: "/images/services/growth.jpg" },
 ];
 
 export function Services() {
@@ -17,9 +17,9 @@ export function Services() {
     <ServicesScroll>
       <GridBackdrop className="services-grid" />
 
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-8">
+      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-14">
         <Reveal>
-          <h2 className="text-4xl font-extrabold tracking-tight md:text-6xl">
+          <h2 className="text-[clamp(2rem,4.2vw,3.75rem)] font-extrabold leading-[1.08] tracking-tight text-lime">
             {services.title}
           </h2>
           <p className="mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl">

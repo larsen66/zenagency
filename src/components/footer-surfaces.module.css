@@ -1,0 +1,11 @@
+.grid {
+  mask-image: radial-gradient(ellipse at center, #000 38%, transparent 100%);
+}
+
+.grid::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  backdrop-filter: blur(3px);
+  mask-image: radial-gradient(ellipse at center, transparent 35%, #000 85%);
+}

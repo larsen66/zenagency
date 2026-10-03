@@ -1,8 +1,7 @@
 import type { CSSProperties } from "react";
 import { Plus } from "lucide-react";
-import { GridBackdrop, LimeGlow } from "@/components/grid-backdrop";
-import { Reveal } from "@/components/reveal";
 import { capabilities, smm } from "@/lib/content";
+import { CapabilityMotion } from "@/components/capability-motion";
 
 const labels = [...capabilities.items, ...smm.items];
 const order = [8, 0, 12, 5, 10, 2, 13, 7, 3, 11, 1, 9, 4, 6];
@@ -18,23 +17,11 @@ const layouts = [
 
 export function Capabilities() {
   return (
-    <section id="capabilities" className="relative overflow-hidden bg-background pt-28 pb-20 md:pt-32 md:pb-28">
-      <GridBackdrop />
-      <LimeGlow className="-right-10 top-0 opacity-40" />
-      <LimeGlow className="-bottom-24 left-0 opacity-25" />
-
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-8">
-        <Reveal>
-          <h2 className="max-w-3xl text-3xl font-extrabold tracking-tight text-lime-deep dark:text-lime md:text-5xl">
-            {capabilities.title}
-          </h2>
-        </Reveal>
-        <ul className="sr-only">
-          {labels.map((item) => <li key={item}>{item}</li>)}
-        </ul>
-      </div>
-
-      <div className="capability-lanes relative mt-12 flex flex-col gap-4 md:gap-5" aria-hidden="true">
+    <div id="capabilities" role="group" aria-label="Our capabilities" className="relative overflow-hidden bg-black pt-4 pb-16 md:pt-6 md:pb-24">
+      <ul className="sr-only">
+        {labels.map((item) => <li key={item}>{item}</li>)}
+      </ul>
+      <CapabilityMotion>
         {rows.map((items, row) => (
           <div key={row} className="capability-track" style={{
             "--lane-duration": `${70 + row * 7}s`,
@@ -55,7 +42,7 @@ export function Capabilities() {
             ))}
           </div>
         ))}
-      </div>
-    </section>
+      </CapabilityMotion>
+    </div>
   );
 }

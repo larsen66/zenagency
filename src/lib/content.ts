@@ -10,7 +10,6 @@ export const site = {
 export const nav = [
   { href: "#about", label: "About" },
   { href: "#services", label: "Services" },
-  { href: "#work", label: "Work" },
   { href: "#contact", label: "Contact" },
 ] as const;
 
@@ -64,12 +63,6 @@ export const whyUs = {
     "Creative & Experienced Team",
     "On-Time Delivery & Reliable Support",
   ],
-  pills: [
-    "Website Design & Development",
-    "UI/UX Design",
-    "Landing Page Creation",
-  ],
-  cta: "Learn more",
 };
 
 export const capabilities = {
@@ -133,11 +126,6 @@ export const ai = {
     "24/7 Customer Support Automation",
     "Seamless Platform Integration",
   ],
-};
-
-export const partnership = {
-  partner: "Gallery Palace Hotel",
-  text: "We are excited to announce our brand partnership with Gallery Palace.",
 };
 
 export const cta = {

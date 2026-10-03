@@ -14,7 +14,6 @@ export type ServicePreview = {
   title: string;
   icon: keyof typeof icons;
   image: string;
-  color: string;
   href?: string;
 };
 
@@ -36,10 +35,10 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
     const context = gsap.context(() => {});
     let move: (event: PointerEvent) => void = () => {};
     context.add(() => {
-      const px = gsap.quickTo(preview.current, "x", { duration: .6, ease: "power3.out" });
-      const py = gsap.quickTo(preview.current, "y", { duration: .6, ease: "power3.out" });
-      const bx = gsap.quickTo(badge.current, "x", { duration: .3, ease: "power3.out" });
-      const by = gsap.quickTo(badge.current, "y", { duration: .3, ease: "power3.out" });
+      const px = gsap.quickTo(preview.current, "x", { duration: .16, ease: "power3.out" });
+      const py = gsap.quickTo(preview.current, "y", { duration: .16, ease: "power3.out" });
+      const bx = gsap.quickTo(badge.current, "x", { duration: .12, ease: "power3.out" });
+      const by = gsap.quickTo(badge.current, "y", { duration: .12, ease: "power3.out" });
       move = (event) => {
         if (!canHover.matches || reduced || event.pointerType === "touch") return;
         const x = Math.max(180, Math.min(window.innerWidth - 180, event.clientX));
@@ -84,7 +83,7 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
 
   const active = modal.active && !reduced;
   return (
-    <div ref={root} className={cn("mt-12 grid gap-4 sm:grid-cols-2", className)}
+    <div ref={root} className={cn("mt-8 grid gap-3 sm:grid-cols-2 md:gap-4 lg:mt-12", className)}
       onPointerLeave={() => setModal((current) => ({ ...current, active: false }))}>
       {items.map((item, index) => {
         const Icon = icons[item.icon];
@@ -95,11 +94,11 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
           }}
           onPointerLeave={() => setModal((current) => ({ ...current, active: false }))}
           onFocus={() => setModal((current) => ({ ...current, active: false }))}
-          className="group flex items-center gap-4 rounded-2xl bg-lime px-5 py-6 text-ink transition-colors hover:bg-[#d5ff51] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink md:px-7 md:py-8">
-          <span className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-ink/20">
-            <Icon className="size-7" strokeWidth={1.75} aria-hidden="true" />
+          className="group flex min-w-0 items-center gap-3 rounded-2xl bg-lime p-4 text-ink transition-[filter] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink sm:gap-4 sm:p-5 lg:px-7 lg:py-8">
+          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-ink/20 lg:size-14">
+            <Icon className="size-6 lg:size-7" strokeWidth={1.75} aria-hidden="true" />
           </span>
-          <span className="text-xl font-extrabold leading-tight md:text-2xl">{item.title}</span>
+          <span className="min-w-0 text-lg font-extrabold leading-tight lg:text-2xl">{item.title}</span>
           <ArrowUpRight className="ml-auto size-5 shrink-0" aria-hidden="true" />
         </a>;
       })}
@@ -115,14 +114,14 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
                 exit: ({ axis, sign }: SlideDirection) => ({ transform: `translate${axis}(${sign * 100}%)` }),
               }}
               initial="enter" animate="visible" exit="exit"
-              transition={{ duration: .4375, ease: [.23, 1, .32, 1] }}
+              transition={{ duration: .24, ease: [.23, 1, .32, 1] }}
               className="absolute inset-0 flex items-center justify-center">
               <Image src={items[modal.index].image} alt="" width={600} height={480} sizes="340px" className="h-full w-full object-cover" />
               {[0, 1, 2].map((band) => (
                 <motion.div key={band}
                   initial={{ transform: "scaleY(1)", opacity: .22 }}
                   animate={{ transform: "scaleY(0)", opacity: 0 }}
-                  transition={{ duration: .4375, delay: (2 - band) * .04375, ease: [.23, 1, .32, 1] }}
+                  transition={{ duration: .24, delay: (2 - band) * .03, ease: [.23, 1, .32, 1] }}
                   className="absolute inset-x-0 h-[12%] origin-bottom bg-black"
                   style={{ top: `${20 + band * 26}%` }} />
               ))}
