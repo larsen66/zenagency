@@ -6,10 +6,10 @@ import { services } from "@/lib/content";
 import { ServicesWithAnimatedHoverModal } from "@/components/ui/services-with-animated-hover-modal";
 
 const previews = [
-  { image: "/images/services/social.jpg" },
-  { image: "/images/services/ads.jpg" },
-  { image: "/images/services/search.jpg" },
-  { image: "/images/services/growth.jpg" },
+  { image: "/images/services/social-preview.webp", illustration: "/images/services/social-illustration.webp" },
+  { image: "/images/services/ads-preview.webp", illustration: "/images/services/ads-illustration.webp" },
+  { image: "/images/services/search-preview.webp", illustration: "/images/services/search-illustration.webp" },
+  { image: "/images/services/growth-preview.webp", illustration: "/images/services/growth-illustration.webp" },
 ];
 
 export function Services() {
@@ -17,12 +17,12 @@ export function Services() {
     <ServicesScroll>
       <GridBackdrop className="services-grid" />
 
-      <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8 lg:px-14">
+      <div className="section-container relative">
         <Reveal>
-          <h2 className="text-[clamp(2rem,4.2vw,3.75rem)] font-extrabold leading-[1.08] tracking-tight text-lime">
+          <h2 className="section-title">
             {services.title}
           </h2>
-          <p className="mt-5 max-w-2xl text-lg text-muted-foreground md:text-xl">
+          <p className="section-description">
             {services.subtitle}
           </p>
         </Reveal>

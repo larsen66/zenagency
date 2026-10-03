@@ -1,0 +1,38 @@
+[
+  {
+    "service": "social",
+    "asset": "public/images/services/social-preview.webp",
+    "source": "https://www.pinterest.com/search/pins/?q=green%20digital%20branding%20poster",
+    "imageUrl": "https://i.pinimg.com/736x/a7/0e/80/a70e807e8e8fe9a9be558ace1451727b.jpg",
+    "evidence": "Turning ideas into trending designs - TDesigns",
+    "verified": "2026-10-03",
+    "sourceType": "Pinterest search result; individual pin URL not exposed while signed out"
+  },
+  {
+    "service": "ads",
+    "asset": "public/images/services/ads-preview.webp",
+    "source": "https://www.pinterest.com/search/pins/?q=green%20digital%20branding%20poster",
+    "imageUrl": "https://i.pinimg.com/736x/71/40/b0/7140b09e5924bfbdea9983ed41ff78e8.jpg",
+    "evidence": "Nexplan billboard campaign",
+    "verified": "2026-10-03",
+    "sourceType": "Pinterest search result; individual pin URL not exposed while signed out"
+  },
+  {
+    "service": "search",
+    "asset": "public/images/services/search-preview.webp",
+    "source": "https://www.pinterest.com/search/pins/?q=green%20digital%20branding%20poster",
+    "imageUrl": "https://i.pinimg.com/736x/49/44/5a/49445a0d491254b648757e92d69433a7.jpg",
+    "evidence": "Together, let us build a brand that truly connects - Branding Solutions",
+    "verified": "2026-10-03",
+    "sourceType": "Pinterest search result; individual pin URL not exposed while signed out"
+  },
+  {
+    "service": "growth",
+    "asset": "public/images/services/growth-preview.webp",
+    "source": "https://www.pinterest.com/search/pins/?q=green%20digital%20branding%20poster",
+    "imageUrl": "https://i.pinimg.com/736x/cf/4f/e6/cf4fe6ee0f1a1016dce6d56449005f7a.jpg",
+    "evidence": "Let us build your brand now - Primaverse Digital",
+    "verified": "2026-10-03",
+    "sourceType": "Pinterest search result; individual pin URL not exposed while signed out"
+  }
+]

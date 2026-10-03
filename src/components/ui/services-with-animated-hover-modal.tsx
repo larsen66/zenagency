@@ -3,17 +3,16 @@
 import gsap from "gsap";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
-import { ArrowUpRight, LineChart, MousePointerClick, Search, Share2 } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { cn } from "@/lib/utils";
 
 type SlideDirection = { axis: "X" | "Y"; sign: number };
 
-const icons = { share: Share2, pointer: MousePointerClick, search: Search, growth: LineChart };
 export type ServicePreview = {
   title: string;
-  icon: keyof typeof icons;
   image: string;
+  illustration: string;
   href?: string;
 };
 
@@ -83,10 +82,9 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
 
   const active = modal.active && !reduced;
   return (
-    <div ref={root} className={cn("mt-8 grid gap-3 sm:grid-cols-2 md:gap-4 lg:mt-12", className)}
+    <div ref={root} className={cn("section-content-gap grid gap-3 sm:grid-cols-2 md:gap-4", className)}
       onPointerLeave={() => setModal((current) => ({ ...current, active: false }))}>
       {items.map((item, index) => {
-        const Icon = icons[item.icon];
         return <a key={item.title} href={item.href ?? "#contact"}
           onPointerEnter={(event) => showPreview(event, index)}
           onPointerMove={(event) => {
@@ -94,12 +92,12 @@ export function ServicesWithAnimatedHoverModal({ items, className }: {
           }}
           onPointerLeave={() => setModal((current) => ({ ...current, active: false }))}
           onFocus={() => setModal((current) => ({ ...current, active: false }))}
-          className="group flex min-w-0 items-center gap-3 rounded-2xl bg-lime p-4 text-ink transition-[filter] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink sm:gap-4 sm:p-5 lg:px-7 lg:py-8">
-          <span className="flex size-11 shrink-0 items-center justify-center rounded-xl border border-ink/20 lg:size-14">
-            <Icon className="size-6 lg:size-7" strokeWidth={1.75} aria-hidden="true" />
+          className="group grid min-h-28 min-w-0 grid-cols-[1fr_auto_auto] items-center gap-2 rounded-2xl bg-lime p-4 text-ink transition-[filter] hover:brightness-95 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink sm:min-h-40 sm:p-5 lg:min-h-48 lg:gap-3 lg:px-7 lg:py-5">
+          <span className="section-item-title min-w-0">{item.title}</span>
+          <span aria-hidden="true" className="relative h-20 w-20 shrink-0 sm:h-28 sm:w-24 lg:h-36 lg:w-40 xl:w-44">
+            <Image src={item.illustration} alt="" fill sizes="(min-width: 1280px) 176px, (min-width: 1024px) 160px, (min-width: 640px) 96px, 80px" className="object-contain" />
           </span>
-          <span className="min-w-0 text-lg font-extrabold leading-tight lg:text-2xl">{item.title}</span>
-          <ArrowUpRight className="ml-auto size-5 shrink-0" aria-hidden="true" />
+          <ArrowUpRight className="size-5 shrink-0" aria-hidden="true" />
         </a>;
       })}
       <div ref={preview} aria-hidden="true" className="pointer-events-none fixed top-0 left-0 z-50 hidden [@media(hover:hover)_and_(pointer:fine)]:block">

@@ -5,6 +5,7 @@ export const site = {
   url: "https://www.zenagency.ge",
   instagram: "@zenagencyge",
   instagramUrl: "https://www.instagram.com/zenagencyge",
+  contactEmail: "dav.hakobyan100@gmail.com",
 };
 
 export const nav = [

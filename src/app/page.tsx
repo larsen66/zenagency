@@ -3,10 +3,9 @@ import { SiteFooter } from "@/components/site-footer";
 import { Hero } from "@/components/sections/hero";
 import { About } from "@/components/sections/about";
 import { Services } from "@/components/sections/services";
-import { WhyUs } from "@/components/sections/why-us";
+import { OurWork } from "@/components/sections/our-work";
 import { Capabilities } from "@/components/sections/capabilities";
 import { AiChatbots } from "@/components/sections/ai-chatbots";
-import { CtaBand } from "@/components/sections/cta-band";
 
 export default function Home() {
   return (
@@ -22,8 +21,7 @@ export default function Home() {
           </div>
           <Services />
         </div>
-        <WhyUs />
-        <CtaBand />
+        <OurWork />
         <AiChatbots />
       </main>
       <SiteFooter />

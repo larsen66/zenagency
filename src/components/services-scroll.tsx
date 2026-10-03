@@ -99,7 +99,7 @@ export function ServicesScroll({ children }: { children: ReactNode }) {
       {Array.from({ length: MAX_SHUTTER_BANDS }, (_, index) =>
         <div key={index} className="services-shutter-band absolute left-0 w-full origin-top bg-white" />)}
     </div>
-    <section ref={section} id="services" className="relative z-[1] overflow-hidden bg-white py-16 sm:py-20 lg:py-28">
+    <section ref={section} id="services" className="section-spacing relative z-[1] overflow-hidden bg-white">
       {children}
     </section>
   </>;

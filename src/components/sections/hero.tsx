@@ -12,7 +12,7 @@ export function Hero() {
         <HeroMark />
         <div className="hero-copy">
           <h1 id="hero-title" aria-label="Ideas built to move."><span className="hero-title-word hero-title-accent">Ideas</span>{" "}<span className="hero-title-word">built</span>{" "}<span className="hero-title-word">to</span>{" "}<span className="hero-title-word">move<em className="hero-title-dot">.</em></span></h1>
-          <p className="hero-caption">From strategy to content, we build modern brands<br className="hidden sm:block" /> with clarity, speed and impact.</p>
+          <p className="hero-caption">From strategy to content, we build modern brands with clarity, speed and impact.</p>
           <div className="hero-actions">
             <a href="#contact" className="hero-button hero-button-primary">Start your growth <ArrowUpRight aria-hidden="true" /></a>
           </div>

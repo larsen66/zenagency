@@ -17,7 +17,7 @@ const layouts = [
 
 export function Capabilities() {
   return (
-    <div id="capabilities" role="group" aria-label="Our capabilities" className="relative overflow-hidden bg-black pt-4 pb-16 md:pt-6 md:pb-24">
+    <div id="capabilities" role="group" aria-label="Our capabilities" className="section-content-gap relative overflow-hidden bg-black">
       <ul className="sr-only">
         {labels.map((item) => <li key={item}>{item}</li>)}
       </ul>

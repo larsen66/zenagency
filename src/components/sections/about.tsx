@@ -4,16 +4,18 @@ import { TextGradientScroll } from "@/components/ui/text-gradient-scroll";
 
 export function About({ children }: { children?: ReactNode }) {
   return (
-    <section id="about" aria-labelledby="about-title" className="relative isolate bg-black text-[#e1e3dc]">
-      <div data-about-panel className="relative flex items-center px-5 pt-20 pb-12 sm:px-8 sm:pt-24 sm:pb-16 lg:min-h-[80svh] lg:px-14 lg:py-24">
-        <div data-about-content className="mx-auto w-full max-w-[1280px]">
-          <h2 id="about-title" className="mb-8 text-xs font-medium uppercase tracking-[.24em] text-lime sm:mb-10 lg:mb-14">{about.title}</h2>
-          <TextGradientScroll
-            text={`${about.highlight} ${about.body}`}
-            type="letter"
-            textOpacity="medium"
-            className="max-w-[26ch] text-[clamp(1.75rem,4.8vw,5rem)] font-medium leading-[1.16] tracking-[-.035em]"
-          />
+    <section id="about" aria-labelledby="about-title" className="section-spacing section-inverse relative isolate bg-black">
+      <div data-about-panel className="relative">
+        <div data-about-content className="section-container">
+          <h2 id="about-title" className="section-title">{about.title}</h2>
+          <div className="section-content-gap">
+            <TextGradientScroll
+              text={`${about.highlight} ${about.body}`}
+              type="letter"
+              textOpacity="medium"
+              className="section-statement"
+            />
+          </div>
         </div>
       </div>
       {children}

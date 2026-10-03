@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Globe } from "lucide-react";
 import { site } from "@/lib/content";
 import styles from "@/components/footer-surfaces.module.css";
+import { ContactForm } from "@/components/contact-form";
 
 export function SiteFooter() {
   return (
@@ -11,7 +12,13 @@ export function SiteFooter() {
       className="relative overflow-hidden border-t border-border bg-background"
     >
       <div aria-hidden className={`zen-grid pointer-events-none absolute inset-0 opacity-50 ${styles.grid}`} />
-      <div className="relative mx-auto flex max-w-[1400px] flex-col gap-7 px-5 py-8 sm:px-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12 lg:px-14 lg:py-10">
+      <section aria-labelledby="contact-title" className="section-container section-spacing relative grid gap-10 lg:grid-cols-[.85fr_1.15fr] lg:gap-20">
+        <h2 id="contact-title" className="section-title">
+          Let’s talk.
+        </h2>
+        <ContactForm email={site.contactEmail} />
+      </section>
+      <div className="section-container relative flex flex-col gap-7 border-t border-border py-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12 lg:py-10">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
           <Image
             src="/brand/zen-lockup-light.png"
@@ -27,7 +34,7 @@ export function SiteFooter() {
             height={68}
             className="hidden h-auto w-28 shrink-0 dark:block"
           />
-          <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+          <p className="section-meta max-w-sm">
             {site.tagline}. Strategy, creativity, and growth in one space.
           </p>
         </div>
