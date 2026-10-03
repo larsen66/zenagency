@@ -143,6 +143,67 @@
   }
 }
 
+/* Shared text roles and alignment for the landing page sections. */
+:root {
+  --section-space: 64px;
+  --section-gutter: 20px;
+  --section-content-gap: 32px;
+}
+.section-spacing { padding-block: var(--section-space); }
+.section-content-gap { margin-top: var(--section-content-gap); }
+.section-container {
+  width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: var(--section-gutter);
+}
+.section-title {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+.section-description {
+  max-width: 48ch;
+  margin: 20px 0 0;
+  color: #686b65;
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+.section-body {
+  color: var(--ink);
+  font-size: clamp(1rem, 1.3vw, 1.125rem);
+  font-weight: 400;
+  line-height: 1.6;
+}
+.section-statement {
+  max-width: 40ch;
+  font-size: clamp(1.5rem, 3vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -.025em;
+}
+.section-item-title {
+  color: var(--ink);
+  font-size: clamp(1.125rem, 1.5vw, 1.375rem);
+  font-weight: 700;
+  line-height: 1.25;
+}
+.section-label { color: var(--ink); font-size: 14px; font-weight: 600; line-height: 1.5; }
+.section-meta { color: #686b65; font-size: 14px; font-weight: 500; line-height: 1.6; }
+.section-inverse .section-title { color: #f2f3f5; }
+.section-inverse .section-body, .section-inverse .section-statement { color: #e1e3dc; }
+@media (min-width: 640px) {
+  :root { --section-space: 80px; --section-gutter: 32px; --section-content-gap: 40px; }
+}
+@media (min-width: 1024px) {
+  :root { --section-space: 112px; --section-gutter: 56px; }
+}
+
 .zen-grid {
   background-image:
     linear-gradient(to right, color-mix(in srgb, var(--lime) 34%, transparent) 1px, transparent 1px),

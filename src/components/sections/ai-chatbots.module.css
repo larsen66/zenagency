@@ -1,0 +1,30 @@
+.section {
+  position: relative;
+  isolation: isolate;
+  padding-block: clamp(3rem, 5vw, 4rem);
+}
+
+.robot {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, #000 97%, transparent);
+}
+
+.space {
+  height: 26rem;
+  pointer-events: none;
+}
+
+@media (max-width: 1023px) {
+  .space { height: 25rem; }
+}
+
+@media (max-width: 767px) {
+  .robot {
+    top: auto;
+    height: clamp(19rem, 82vw, 23rem);
+  }
+
+  .space { height: clamp(17rem, 72vw, 21rem); }
+}

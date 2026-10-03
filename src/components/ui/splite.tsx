@@ -2,15 +2,38 @@
 
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
+import { animate } from "motion";
 
-// Triangulated from public/brand/zen-letters.svg.
-import robotLogo from "@/lib/robot-logo.json";
+// ZEN projected onto the robot chest with a 0.25-unit surface offset.
+import robotDecal from "@/lib/robot-decal.json";
 
 import type { Application } from "@splinetool/runtime";
 
 const Spline = lazy(() => import("@splinetool/react-spline"));
 // renderMode is documented by Application.requestRender but omitted from its type.
-type ManagedApplication = Application & { renderMode: "auto" | "manual" | "continuous" };
+type ManagedApplication = Application & { renderMode: "auto" | "manual" | "continuous"; disposed?: boolean };
+
+// Disable only the authored camera entrance; keep body and pointer events intact.
+function disableCameraEntrance(app: Application) {
+  const camera = app.findObjectByName("Camera 2");
+  if (!camera) return;
+  const data = app.data.scene.objects.get(camera.uuid)?.data as {
+    events?: { data: { type: string; disabled: boolean } }[];
+  } | undefined;
+  for (const event of data?.events ?? []) {
+    if (event.data.type === "Start") event.data.disabled = true;
+  }
+  // The load callback runs after Start actions are connected. Stop the current
+  // camera action as well as disabling its future activation on scroll re-entry.
+  const starts = app.eventManager?.handlers?.Start as {
+    eventsPerObject?: Map<{ uuid: string }, { disconnect(): void }[]>;
+  } | undefined;
+  for (const [object, events] of starts?.eventsPerObject ?? []) {
+    if (object.uuid !== camera.uuid) continue;
+    for (const event of events) event.disconnect();
+    starts?.eventsPerObject?.delete(object);
+  }
+}
 
 class SplineBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
@@ -26,11 +49,13 @@ interface SplineSceneProps {
 
 export function SplineScene({ scene, className, robotPalette = false }: SplineSceneProps) {
   const appRef = useRef<ManagedApplication | null>(null);
+  const prepared = useRef(false);
   const syncPlayback = useRef<() => void>(() => {});
   const fitRobotCamera = useRef<() => void>(() => {});
   const [mounted, setMounted] = useState(false);
   const [ready, setReady] = useState(false);
-  const handleLoad = useCallback((app: Application) => {
+  const handleLoad = useCallback(async (app: Application) => {
+    if ((app as ManagedApplication).disposed) return;
     appRef.current = app as ManagedApplication;
     if (!robotPalette) {
       setReady(true);
@@ -38,27 +63,9 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
       return;
     }
     const brandLime = getComputedStyle(root.current ?? document.documentElement).getPropertyValue("--lime").trim();
-    // Jump directly to the camera's authored wide state.
-    const camera = app.findObjectByName("Camera 2");
-    if (camera) camera.state = "State";
+    disableCameraEntrance(app);
     fitRobotCamera.current();
     const body = app.findObjectByName("Body");
-    if (body && !app.findObjectByName("ZEN chest logo")) {
-      void app.createObject("CustomMesh", {
-        name: "ZEN chest logo",
-        parent: body,
-        position: [0, 220, 57],
-        vertices: robotLogo.vertices,
-        indices: robotLogo.indices,
-        material: { color: brandLime, roughness: 0.65, metalness: 0.2 },
-      }).then((logo) => {
-        // Keep the brand color bright instead of darkening it with scene lighting.
-        const material = logo.material as { layers?: { type: string; alpha: number }[] };
-        for (const layer of material.layers ?? []) {
-          if (layer.type === "light") layer.alpha = 0;
-        }
-      });
-    }
     // Palette applies only to the original robot meshes.
     for (const object of app.getAllObjects()) {
       if (!object.material || object.name === "ZEN chest logo") continue;
@@ -78,8 +85,25 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
         if (face && layer.type === "rainbow") layer.alpha = 0;
       }
     }
+    if (body && !app.findObjectByName("ZEN chest logo")) {
+      const logo = await app.createObject("CustomMesh", {
+        name: "ZEN chest logo",
+        parent: body,
+        position: [0, 220, 0],
+        vertices: robotDecal.vertices,
+        normals: robotDecal.normals,
+        castShadow: false,
+        material: { color: brandLime, roughness: .9, metalness: 0 },
+      });
+      const material = logo.material as { alpha: number; layers: { type: string; alpha: number }[] };
+      material.alpha = .62;
+      for (const layer of material.layers) {
+        if (layer.type === "light") layer.alpha = .35;
+      }
+    }
+    if (appRef.current !== app || (app as ManagedApplication).disposed) return;
+    prepared.current = true;
     app.requestRender();
-    setReady(true);
     syncPlayback.current();
   }, [robotPalette]);
   const root = useRef<HTMLDivElement>(null);
@@ -93,22 +117,61 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     let scrolling = false;
     let timer: ReturnType<typeof setTimeout>;
     let renderFrame = 0;
+    let revealFrame = 0;
+    let revealed = false;
     let lastRender = 0;
-    let cameraZ = 0;
     const fit = () => {
       if (!robotPalette || !appRef.current) return;
       const camera = appRef.current.findObjectByName("Camera 2");
       if (!camera) return;
-      // The authored upper-body framing is calibrated to the 583 x 541 poster.
-      // Dolly back on smaller containers instead of cropping the head and hands.
-      const scale = Math.max(1, 583 / Math.max(element.clientWidth, 1), 541 / Math.max(element.clientHeight, 1));
-      const nextZ = 1000 + 650 * (scale - 1);
-      if (cameraZ === nextZ) return;
-      camera.position.z = nextZ;
-      cameraZ = nextZ;
+      appRef.current.setSize(element.clientWidth, element.clientHeight);
+      camera.state = "State";
+      const mobile = element.clientWidth < 768;
+      const aspect = element.clientWidth / Math.max(element.clientHeight, 1);
+      // Keep the original screen size while the shorter section crops the lower body.
+      const distance = mobile
+        ? element.clientHeight * 1000 / 448
+        : Math.max(element.clientHeight * 1000 / 864, element.clientHeight * 1440000 / (864 * element.clientWidth));
+      // The canvas spans the section, behind the copy. Offset the fixed camera
+      // to frame the robot on the right while leaving both arms inside the canvas.
+      const viewWidth = aspect * distance * Math.tan(Math.PI / 8);
+      camera.position.x = mobile ? 0 : -viewWidth * .16;
+      camera.position.y = 200;
+      camera.position.z = distance;
+      camera.rotation.x = 0;
+      camera.rotation.y = 0;
+      camera.rotation.z = 0;
       appRef.current.requestRender();
     };
     fitRobotCamera.current = fit;
+    const section = element.closest("section") ?? element;
+    const hoverPointer = matchMedia("(hover: hover) and (pointer: fine)");
+    let hovered = false;
+    let hoverAnimation: ReturnType<typeof animate> | undefined;
+    const turnRobot = (next: boolean) => {
+      if (!robotPalette || hovered === next) return;
+      const bot = appRef.current?.findObjectByName("Bot");
+      if (!bot) return;
+      hovered = next;
+      hoverAnimation?.stop();
+      hoverAnimation = animate(bot.rotation.y, next ? .16 : 0, {
+        type: "spring", duration: .5, bounce: .2,
+        onUpdate: (angle) => {
+          bot.rotation.y = angle;
+          appRef.current?.requestRender();
+        },
+      });
+    };
+    const hoverRobot = (event: PointerEvent) => {
+      if (preference.matches || !hoverPointer.matches) return;
+      const bounds = element.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width;
+      const y = (event.clientY - bounds.top) / bounds.height;
+      turnRobot(x > .5 && x < .95 && y > .15 && y < .95);
+    };
+    const leaveRobot = () => turnRobot(false);
+    section.addEventListener("pointermove", hoverRobot);
+    section.addEventListener("pointerleave", leaveRobot);
     const sizes = new ResizeObserver(fit);
     sizes.observe(element);
     const requestMobileFrame = (now: number) => {
@@ -124,13 +187,28 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
       if (app) app.renderMode = coarse.matches ? "manual" : "auto";
       if (active) {
         setMounted(true);
-        if (app?.isStopped) app.play();
+        if (app?.isStopped) {
+          app.play();
+          if (robotPalette) fit();
+        }
         if (app && coarse.matches && !renderFrame) {
           lastRender = performance.now();
           app.requestRender();
           renderFrame = requestAnimationFrame(requestMobileFrame);
         }
+        if (app && robotPalette && prepared.current && !revealed && !revealFrame) {
+          // Keep the poster until the visible scene has submitted its first frame.
+          revealFrame = requestAnimationFrame(() => {
+            app.requestRender();
+            revealFrame = requestAnimationFrame(() => {
+              revealFrame = 0;
+              revealed = true;
+              setReady(true);
+            });
+          });
+        }
       } else if (app && !app.isStopped) app.stop();
+      if (!active) { cancelAnimationFrame(revealFrame); revealFrame = 0; }
       if (!active || !coarse.matches) { cancelAnimationFrame(renderFrame); renderFrame = 0; }
       const state = active ? app ? "running" : "loading" : "paused";
       if (element.dataset.state !== state) element.dataset.state = state;
@@ -152,7 +230,7 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     // Prepare the scene while the preceding sections are on screen.
     // Playback still uses the actual visibility observer above.
     const preload = new IntersectionObserver(([entry]) => {
-      if (!entry.isIntersecting || preference.matches || connection?.saveData) return;
+      if (!robotPalette || !entry.isIntersecting || preference.matches || connection?.saveData) return;
       setMounted(true);
       preload.disconnect();
     }, { rootMargin: "200% 0px" });
@@ -164,9 +242,13 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     return () => {
       clearTimeout(timer);
       cancelAnimationFrame(renderFrame);
+      cancelAnimationFrame(revealFrame);
       observer.disconnect();
       preload.disconnect();
       sizes.disconnect();
+      hoverAnimation?.stop();
+      section.removeEventListener("pointermove", hoverRobot);
+      section.removeEventListener("pointerleave", leaveRobot);
       window.removeEventListener("scroll", settle);
       document.removeEventListener("visibilitychange", update);
       preference.removeEventListener("change", update);
@@ -174,14 +256,15 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
       syncPlayback.current = () => {};
       fitRobotCamera.current = () => {};
       appRef.current = null;
+      prepared.current = false;
     };
   }, [robotPalette]);
 
   return (
     <div ref={root} className={`relative ${className ?? ""}`} data-spline-scene>
-    {robotPalette && <div aria-hidden="true" className={`pointer-events-none absolute inset-0 transition-opacity duration-200 motion-reduce:transition-none ${ready ? "opacity-0" : "opacity-100"}`}>
-      <Image src="/images/zen/robot-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 50vw, 100vw" className="hidden object-cover sm:block" />
-      <Image src="/images/zen/robot-mobile-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 1px, 100vw" className="object-cover sm:hidden" />
+    {robotPalette && <div aria-hidden="true" className={`pointer-events-none absolute inset-0 z-10 ${ready ? "opacity-0" : "opacity-100"}`}>
+      <Image src="/images/zen/robot-portrait-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 50vw, 100vw" className="hidden object-cover sm:block" />
+      <Image src="/images/zen/robot-portrait-mobile-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 1px, 100vw" className="object-cover sm:hidden" />
     </div>}
     <Suspense
       fallback={
