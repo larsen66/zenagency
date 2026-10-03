@@ -1,0 +1,43 @@
+.poster {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 160ms ease;
+}
+
+.posterReady { opacity: 0; }
+
+.desktopPoster {
+  position: absolute;
+  top: 50%;
+  left: 66%;
+  width: min(100%, 1440px);
+  height: auto;
+  max-width: none;
+  transform: translate(-66%, -50%);
+}
+
+.mobilePoster { display: none; }
+
+.live { height: 100%; width: 100%; opacity: 0; }
+.liveReady { opacity: 1; }
+
+@media (max-width: 767px) {
+  .desktopPoster { display: none; }
+  .mobilePoster {
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 390px;
+    height: auto;
+    max-width: none;
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .poster { transition: none; }
+}

@@ -3,6 +3,7 @@
 import { Component, Suspense, lazy, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import Image from "next/image";
 import { animate } from "motion";
+import styles from "./spline-scene.module.css";
 
 // ZEN projected onto the robot chest with a 0.25-unit surface offset.
 import robotDecal from "@/lib/robot-decal.json";
@@ -120,11 +121,41 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     let revealFrame = 0;
     let revealed = false;
     let lastRender = 0;
+    let sizedApp: Application | null = null;
+    let canvasWidth = 0;
+    let canvasHeight = 0;
+    let mountRequested = false;
+    let mountTimer: ReturnType<typeof setTimeout>;
+    let mountIdle = 0;
+    const scheduleMount = () => {
+      if (mountRequested) return;
+      mountRequested = true;
+      const prepare = () => {
+        if (scrolling || document.hidden) {
+          mountTimer = setTimeout(prepare, 200);
+          return;
+        }
+        if (window.requestIdleCallback) {
+          mountIdle = window.requestIdleCallback(() => {
+            if (scrolling) prepare(); else setMounted(true);
+          });
+        } else setMounted(true);
+      };
+      mountTimer = setTimeout(prepare, 200);
+    };
     const fit = () => {
       if (!robotPalette || !appRef.current) return;
       const camera = appRef.current.findObjectByName("Camera 2");
       if (!camera) return;
-      appRef.current.setSize(element.clientWidth, element.clientHeight);
+      const width = element.clientWidth;
+      const height = element.clientHeight;
+      if (!width || !height) return;
+      if (appRef.current !== sizedApp || width !== canvasWidth || height !== canvasHeight) {
+        appRef.current.setSize(width, height);
+        sizedApp = appRef.current;
+        canvasWidth = width;
+        canvasHeight = height;
+      }
       camera.state = "State";
       const mobile = element.clientWidth < 768;
       const aspect = element.clientWidth / Math.max(element.clientHeight, 1);
@@ -186,7 +217,7 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
       const app = appRef.current;
       if (app) app.renderMode = coarse.matches ? "manual" : "auto";
       if (active) {
-        setMounted(true);
+        scheduleMount();
         if (app?.isStopped) {
           app.play();
           if (robotPalette) fit();
@@ -217,8 +248,7 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     const settle = () => {
       clearTimeout(timer);
       scrolling = true;
-      if (!visible) return;
-      update();
+      if (visible) update();
       // Keep module evaluation and GPU scene initialization outside active scroll.
       timer = setTimeout(() => { scrolling = false; update(); }, 180);
     };
@@ -231,7 +261,7 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     // Playback still uses the actual visibility observer above.
     const preload = new IntersectionObserver(([entry]) => {
       if (!robotPalette || !entry.isIntersecting || preference.matches || connection?.saveData) return;
-      setMounted(true);
+      scheduleMount();
       preload.disconnect();
     }, { rootMargin: "200% 0px" });
     preload.observe(element.closest("section") ?? element);
@@ -241,6 +271,8 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     coarse.addEventListener("change", update);
     return () => {
       clearTimeout(timer);
+      clearTimeout(mountTimer);
+      if (mountIdle) window.cancelIdleCallback(mountIdle);
       cancelAnimationFrame(renderFrame);
       cancelAnimationFrame(revealFrame);
       observer.disconnect();
@@ -262,10 +294,11 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
 
   return (
     <div ref={root} className={`relative ${className ?? ""}`} data-spline-scene>
-    {robotPalette && <div aria-hidden="true" className={`pointer-events-none absolute inset-0 z-10 ${ready ? "opacity-0" : "opacity-100"}`}>
-      <Image src="/images/zen/robot-portrait-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 50vw, 100vw" className="hidden object-cover sm:block" />
-      <Image src="/images/zen/robot-portrait-mobile-poster.png" alt="" fill loading="eager" sizes="(min-width: 640px) 1px, 100vw" className="object-cover sm:hidden" />
+    {robotPalette && <div aria-hidden="true" className={`${styles.poster} ${ready ? styles.posterReady : ""}`}>
+      <Image src="/images/zen/robot-loading-desktop.png" alt="" width={1440} height={544} loading="eager" sizes="(min-width: 1440px) 1440px, 100vw" className={styles.desktopPoster} />
+      <Image src="/images/zen/robot-loading-mobile.png" alt="" width={390} height={320} loading="eager" sizes="390px" className={styles.mobilePoster} />
     </div>}
+    <div className={robotPalette ? `${styles.live} ${ready ? styles.liveReady : ""}` : "h-full w-full"}>
     <Suspense
       fallback={
         robotPalette ? null : <div className="flex h-full w-full items-center justify-center" role="status">
@@ -276,6 +309,7 @@ export function SplineScene({ scene, className, robotPalette = false }: SplineSc
     >
       {mounted && <SplineBoundary><Spline scene={scene} className="h-full w-full" onLoad={handleLoad} /></SplineBoundary>}
     </Suspense>
+    </div>
     </div>
   );
 }
